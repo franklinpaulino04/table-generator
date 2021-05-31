@@ -4,9 +4,9 @@ $(document).ready(function (){
 		"ajax": url + "tableGenerator/datatables",
 		'order': [[1, "asc"]],
 		"columns": [
-			{"data": 'tableId',         "sClass": "dt-tableId",       "width": "5%",   "defaultContent": "<i class='na'>-</i>"},
-			{"data": 'table_name',      "sClass": "dt-table_name",    "width": "15%", "defaultContent": "<i class='na'>-</i>"},
-			{"data": 'action',          "sClass": "dt-action",         "width": "5%",  "defaultContent": "<i class='na'>-</i>"}
+			{"data": 'tableId',    "sClass": "dt-tableId",    "width": "5%",   "defaultContent": "<i class='na'>-</i>"},
+			{"data": 'table_name', "sClass": "dt-table_name", "width": "15%", "defaultContent": "<i class='na'>-</i>"},
+			{"data": 'action',     "sClass": "dt-action",     "width": "5%",  "defaultContent": "<i class='na'>-</i>"}
 		],
 		'createdRow': function (row, data, index) {
 			$('.dt-action', row).html(actionLinks(data));
@@ -72,8 +72,6 @@ var addRow = function (){
 	$('.table tfoot').before(row);
 }
 
-
-// Example POST method implementation:
 async function postData(url = '', data = {}) {
 
 	const response = await fetch(url, {

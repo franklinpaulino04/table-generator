@@ -69,7 +69,6 @@
 	</div>
 </div>
 
-
 <table class="hidden">
 	<tbody id="row-table-hidden">
 		<tr class="row-item inline">
