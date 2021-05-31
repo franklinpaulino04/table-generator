@@ -13,29 +13,44 @@ $(document).ready(function (){
 		}
 	});
 
-	$(document).on('click', '#add-row',function () {
-		let row = $('#row-table-hidden').clone();
-		$('.table tfoot').before(row);
+	$(document).on('click', '#add-row', addRow);
+
+	$(document).on('click', '#submit', function (){
+		let formUrl 	= $('#form').attr('action'),
+			formData 	= $('#form').serialize();
+
+		postData(formUrl, formData)
+			.then(data => {
+				console.log(data);
+			});
 	});
 
 	$(document).on('click', '.remove_row', function () {
 		var item        = $(this).closest('tbody'),
 			count       = $('#mytable tr.row-item').length,
 			id          = parseInt($(this).data('itemid')),
-			data        = {type: 'get', url: url.baseUrl + 'tableGenerator/hide_items/' + id, doAfter: 'remove', selector: item};
+			data        = {type: 'get', url: url + 'tableGenerator/hide_items/' + id, selector: item};
 
 		if(count > 1) {
 			if(id === 'undefined' || id == 0){
 				item.remove();
 
 			}else{
-
+				fetch(data.url).then(( response ) =>{
+					data.selector.remove();
+				}).catch( ( error ) =>{
+					console.log(error);
+				});
 			}
 
 		} else {
 			alert("I can't delete all the items");
 		}
 	});
+
+	if($('#mytable table tbody').length === 0) {
+		addRow();
+	}
 });
 
 var actionLinks = function (data) {
@@ -51,3 +66,21 @@ var actionLinks = function (data) {
 
 	return html;
 };
+
+var addRow = function (){
+	let row = $('#row-table-hidden').clone();
+	$('.table tfoot').before(row);
+}
+
+
+// Example POST method implementation:
+async function postData(url = '', data = {}) {
+
+	const response = await fetch(url, {
+		method: 'POST',
+		headers: {'Content-Type': 'application/x-www-form-urlencoded',},
+		body: JSON.stringify(data)
+	});
+
+	return response.json();
+}

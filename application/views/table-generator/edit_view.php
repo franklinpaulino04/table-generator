@@ -12,7 +12,7 @@
 
 	<div class="p-2 mb-4 bg-light rounded-3">
 
-		<form role="form" id="general-form" name="form" method="POST" action="<?php echo base_url('tablegenerator/update/'.$tableId);?>" onsubmit="return false;">
+		<form role="form" id="form" name="form" method="POST" action="<?php echo base_url('tablegenerator/update/'.$tableId);?>" onsubmit="return false;">
 
 			<div class="mb-3">
 				<label for="exampleFormControlInput1" class="form-label">Table Name</label>
@@ -33,8 +33,8 @@
 						<th></th>
 					</tr>
 				</thead>
-				<tbody>
-					<?php foreach ($items as $item_row):?>
+				<?php foreach ($items as $item_row):?>
+					<tbody>
 						<tr>
 							<td>
 								<?php echo $field_key 		= ($item_row->field_key == 1)? 'checked' : '';?>
@@ -50,8 +50,8 @@
 							<td><input type="checkbox" name="field_not_null[]" <?php echo $field_not_null; ?> class="" value="1"></td>
 							<td><a href="javascript:void(0)" data-itemId="<?php echo $item_row->itemId;?>" class="btn btn-danger remove_row">x</a></td>
 						</tr>
-					<?php endforeach;?>
-				</tbody>
+					</tbody>
+				<?php endforeach;?>
 				<tfoot>
 				<tr>
 					<td colspan="7">

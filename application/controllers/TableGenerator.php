@@ -7,6 +7,10 @@ class TableGenerator extends CI_Controller
 	{
 		parent::__construct();
 
+		//doc
+//		https://www.kodingmadesimple.com/2016/09/create-database-and-table-in-codeigniter-if-not-exists.html
+//		https://codeigniter.com/userguide3/database/forge.html#adding-keys
+
 		// Load Model
 		$this->load->model('tablegenerator_model');
 		$this->load->model('tablegenerator_items_model');
@@ -49,6 +53,11 @@ class TableGenerator extends CI_Controller
 		);
 
 		$this->load->view('include', $data);
+	}
+
+	public function update($tableId)
+	{
+
 	}
 
 	public function hide_items($itemId)
