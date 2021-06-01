@@ -7,14 +7,13 @@ class field_types_model extends CI_Model
 
 	public function data_dropdown()
 	{
-		$options[0] = 'Select a type';
+		$options[''] = 'Select a type';
 
 		$query = $this->db->get($this->table);
 
 		foreach ($query->result() as $row)
 		{
-			$options[$row->typeId]['id']     = $row->typeId;
-			$options[$row->typeId]['name']   = $row->name;
+			$options[$row->typeId]   = $row->name;
 		}
 
 		return $options;

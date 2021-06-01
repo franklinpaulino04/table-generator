@@ -11,9 +11,9 @@ class tableGenerator_model extends CI_Model
 		return $query->result();
 	}
 
-	public function row()
+	public function row($tableId)
 	{
-		return $this->db->query("SELECT * FROM ai_tables WHERE hidden = 0")->row();
+		return $this->db->query("SELECT * FROM ai_tables WHERE hidden = 0 AND tableId = $tableId")->row();
 	}
 
 	public function save($array)
@@ -22,9 +22,9 @@ class tableGenerator_model extends CI_Model
 		return $this->db->insert_id();
 	}
 
-	public function update($id, $data)
+	public function update($where, $data)
 	{
-		$result = $this->db->where(array($this->primary_key => $id))->update($this->table, $data);
+		$result = $this->db->where($where)->update($this->table, $data);
 		return $result;
 	}
 }

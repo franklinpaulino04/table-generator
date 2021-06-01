@@ -21,8 +21,19 @@ $(document).ready(function (){
 
 		postData(formUrl, formData)
 			.then(data => {
-				console.log(data);
-			});
+
+				let {result, error} = data;
+
+				if(result == 1){
+					window.location.href = url + 'tableGenerator';
+				}
+				else{
+					$('.response').html(error);
+				}
+
+			}).catch( (err) =>{
+			console.log(err);
+		});
 	});
 
 	$(document).on('click', '.remove_row', function () {
@@ -60,15 +71,15 @@ var actionLinks = function (data) {
 			html           += '<button id="btnGroupDrop1" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"> Options';
 			html           += '</button>';
 			html           += '<ul class="dropdown-menu" aria-labelledby="btnGroupDrop1">';
-			html           += '<li><a class="dropdown-item" href="#">Edit</a></li>';
-			html           += '<li><a class="dropdown-item" href="#">Delete</a></li>';
+			html           += '<li><a class="dropdown-item" href="' + url + 'tableGenerator/edit/' + id + '">Edit</a></li>';
+			html           += '<li><a class="dropdown-item" href="javascript:void(0)" data-url="' + url + 'tableGenerator/delete/' + id + '">Delete</a></li>';
 			html           += '</ul></div>';
 
 	return html;
 };
 
 var addRow = function (){
-	let row = $('#row-table-hidden').clone();
+	let row = $('#row-table-hidden tbody').clone();
 	$('.table tfoot').before(row);
 }
 
@@ -77,7 +88,7 @@ async function postData(url = '', data = {}) {
 	const response = await fetch(url, {
 		method: 'POST',
 		headers: {'Content-Type': 'application/x-www-form-urlencoded',},
-		body: JSON.stringify(data)
+		body: data,
 	});
 
 	return response.json();
