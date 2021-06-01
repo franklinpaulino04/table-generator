@@ -3,15 +3,15 @@
 
  Source Server         : localhost
  Source Server Type    : MySQL
- Source Server Version : 100416
+ Source Server Version : 100411
  Source Host           : localhost:3306
  Source Schema         : dbtablegenerator
 
  Target Server Type    : MySQL
- Target Server Version : 100416
+ Target Server Version : 100411
  File Encoding         : 65001
 
- Date: 31/05/2021 16:29:49
+ Date: 31/05/2021 22:57:47
 */
 
 SET NAMES utf8mb4;
@@ -22,52 +22,44 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- ----------------------------
 DROP TABLE IF EXISTS `ai_field_types`;
 CREATE TABLE `ai_field_types`  (
-  `typeId` int NOT NULL AUTO_INCREMENT,
+  `typeId` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
   PRIMARY KEY (`typeId`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 5 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of ai_field_types
 -- ----------------------------
+INSERT INTO `ai_field_types` VALUES (1, 'varchar');
+INSERT INTO `ai_field_types` VALUES (2, 'int');
+INSERT INTO `ai_field_types` VALUES (3, 'decimal');
+INSERT INTO `ai_field_types` VALUES (4, 'text');
 
 -- ----------------------------
 -- Table structure for ai_tables
 -- ----------------------------
 DROP TABLE IF EXISTS `ai_tables`;
 CREATE TABLE `ai_tables`  (
-  `tableId` int NOT NULL AUTO_INCREMENT,
+  `tableId` int(11) NOT NULL AUTO_INCREMENT,
   `table_name` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
   `hidden` tinyint(1) NULL DEFAULT 0,
   PRIMARY KEY (`tableId`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
-
--- ----------------------------
--- Records of ai_tables
--- ----------------------------
-INSERT INTO `ai_tables` VALUES (1, NULL, 1);
-INSERT INTO `ai_tables` VALUES (2, NULL, 1);
-INSERT INTO `ai_tables` VALUES (3, NULL, 1);
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for ai_tables_items
 -- ----------------------------
 DROP TABLE IF EXISTS `ai_tables_items`;
 CREATE TABLE `ai_tables_items`  (
-  `itemId` int NOT NULL AUTO_INCREMENT,
-  `tableId` int NULL DEFAULT 0,
+  `itemId` int(11) NOT NULL AUTO_INCREMENT,
+  `tableId` int(11) NULL DEFAULT 0,
   `field_name` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
-  `field_type` int NULL DEFAULT 0,
-  `field_length` int NULL DEFAULT NULL,
-  `field_decimal` decimal(20, 9) NULL DEFAULT NULL,
-  `field_not_null` tinyint(1) NULL DEFAULT 0,
+  `field_typeId` int(11) NULL DEFAULT 0,
+  `field_length` int(11) NULL DEFAULT NULL,
   `field_key` tinyint(1) NULL DEFAULT 0,
+  `field_default` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
   `hidden` tinyint(1) NULL DEFAULT 0,
   PRIMARY KEY (`itemId`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
-
--- ----------------------------
--- Records of ai_tables_items
--- ----------------------------
 
 SET FOREIGN_KEY_CHECKS = 1;
