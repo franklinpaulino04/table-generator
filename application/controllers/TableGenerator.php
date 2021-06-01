@@ -232,62 +232,71 @@ class TableGenerator extends CI_Controller
 				'hidden' 	 => 0,
 			);
 
-			if($this->tablegenerator_model->update(array('tableId' => $tableId), $data))
+			if($this->field_query_model->execute_query("ALTER TABLE ".$row->table_name." RENAME TO ".$data['table_name']))
 			{
-				$this->field_query_model->execute_query("ALTER TABLE ".$row->table_name." RENAME TO ".$data['table_name']);
-
-				if(isset($_POST['field_name']))
+				if($this->tablegenerator_model->update(array('tableId' => $tableId), $data))
 				{
-					foreach ($_POST['field_name'] AS $key => $value)
+					if(isset($_POST['field_name']))
 					{
-						$items = array(
-							'tableId' 	 		=> $tableId,
-							'field_name' 		=> $this->clear_text($this->input->post('field_name')[$key]),
-							'field_typeId'  	=> $this->input->post('field_typeId')[$key],
-							'field_length'  	=> $this->input->post('field_length')[$key],
-							'field_key'  		=> (isset($_POST['field_key'][$key]))? $this->input->post('field_key')[$key] : 0,
-							'field_default' 	=> $this->input->post('field_default')[$key],
-						);
-
-						if($_POST['itemId'][$key] == 0)
+						foreach ($_POST['field_name'] AS $key => $value)
 						{
-							$this->tablegenerator_items_model->save($items);
+							$items = array(
+								'tableId' 	 		=> $tableId,
+								'field_name' 		=> $this->clear_text($this->input->post('field_name')[$key]),
+								'field_typeId'  	=> $this->input->post('field_typeId')[$key],
+								'field_length'  	=> $this->input->post('field_length')[$key],
+								'field_key'  		=> (isset($_POST['field_key'][$key]))? $this->input->post('field_key')[$key] : 0,
+								'field_default' 	=> $this->input->post('field_default')[$key],
+							);
 
-							if($items['field_key'] == 1)
+							if($_POST['itemId'][$key] == 0)
 							{
-								$default = (empty($items['field_default']))? 'NULL' : $items['field_default'];
-								$table ="ALTER TABLE ".$data['table_name']." ADD ".$items['field_name']." ".$this->type($items['field_typeId'])."(".$items['field_length'].") DEFAULT ".$default." ";
-								$this->field_query_model->execute_query($table);
+								$this->tablegenerator_items_model->save($items);
+
+								if($items['field_key'] == 1)
+								{
+									$default = (empty($items['field_default']))? 'NULL' : $items['field_default'];
+									$table ="ALTER TABLE ".$data['table_name']." ADD ".$items['field_name']." ".$this->type($items['field_typeId'])."(".$items['field_length'].") AUTO_INCREMENT PRIMARY KEY DEFAULT ".$default." ";
+
+									$this->field_query_model->execute_query($table);
+								}
+								else
+								{
+									$default = (empty($items['field_default']))? 'NULL' : $items['field_default'];
+									$table ="ALTER TABLE ".$data['table_name']." ADD ".$items['field_name']." ".$this->type($items['field_typeId'])."(".$items['field_length'].") DEFAULT ".$default." ";
+
+									$this->field_query_model->execute_query($table);
+								}
 							}
 							else
 							{
-								$default = (empty($items['field_default']))? 'NULL' : $items['field_default'];
-								$table ="ALTER TABLE ".$data['table_name']." ADD ".$items['field_name']." ".$this->type($items['field_typeId'])."(".$items['field_length'].") DEFAULT ".$default." ";
-								$this->field_query_model->execute_query($table);
-							}
-						}
-						else
-						{
-							$itemId   = $_POST['itemId'][$key];
-							$row_item = $this->tablegenerator_items_model->row($itemId);
+								$itemId   = $_POST['itemId'][$key];
+								$row_item = $this->tablegenerator_items_model->row($itemId);
 
-							if($row_item->field_name != $items['field_name'])
-							{
-								$default = (empty($items['field_default']))? 'NULL' : $items['field_default'];
-								$table ="ALTER TABLE ".$data['table_name']." CHANGE $row_item->field_name ".$items['field_name']." ".$this->type($items['field_typeId'])."(".$items['field_length'].") DEFAULT ".$default." ";
-								$this->field_query_model->execute_query($table);
-							}
+								if($items['field_key'] == 1)
+								{
+									$default = (empty($items['field_default']))? 'NULL' : "'".$items['field_default']."'";
+									$table ="ALTER TABLE ".$data['table_name']." CHANGE $row_item->field_name ".$items['field_name']." ".$this->type($items['field_typeId'])."(".$items['field_length'].") AUTO_INCREMENT PRIMARY KEY DEFAULT $default ";
 
-							$this->tablegenerator_items_model->update(array('itemId' => $itemId), $items);
+									$this->field_query_model->execute_query($table);
+								}
+								else
+								{
+									$default = (empty($items['field_default']))? 'NULL' : "'".$items['field_default']."'";
+									$table ="ALTER TABLE ".$data['table_name']." CHANGE $row_item->field_name ".$items['field_name']." ".$this->type($items['field_typeId'])."(".$items['field_length'].") DEFAULT $default ";
+
+									$this->field_query_model->execute_query($table);
+								}
+
+								$this->field_query_model->execute_query($table);
+								$this->tablegenerator_items_model->update(array('itemId' => $itemId), $items);
+							}
 						}
 					}
 				}
 
-				if($this->field_query_model->execute_query($table))
-				{
-					echo json_encode(array('result' => 1));
-					exit();
-				}
+				echo json_encode(array('result' => 1));
+				exit();
 			}
 		}
 	}
