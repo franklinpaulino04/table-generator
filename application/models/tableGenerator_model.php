@@ -7,13 +7,13 @@ class tableGenerator_model extends CI_Model
 
 	public function datatable()
 	{
-		$query = $this->db->get($this->table);
+		$query = $this->db->where(array('hidden' => 0))->get($this->table);
 		return $query->result();
 	}
 
 	public function row($tableId)
 	{
-		return $this->db->query("SELECT * FROM ai_tables WHERE hidden = 0 AND tableId = $tableId")->row();
+		return $this->db->query("SELECT * FROM ai_tables WHERE tableId = $tableId")->row();
 	}
 
 	public function save($array)
@@ -25,6 +25,12 @@ class tableGenerator_model extends CI_Model
 	public function update($where, $data)
 	{
 		$result = $this->db->where($where)->update($this->table, $data);
+		return $result;
+	}
+
+	public function count_by($where)
+	{
+		$result = $this->db->where($where)->from($this->table)->count_all_results();
 		return $result;
 	}
 }

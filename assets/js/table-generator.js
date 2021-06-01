@@ -1,5 +1,5 @@
 $(document).ready(function (){
-	$('#table-generate').DataTable({
+	let table = $('#table-generate').DataTable({
 		'dataType': 'json',
 		"ajax": url + "tableGenerator/datatables",
 		'order': [[1, "asc"]],
@@ -39,15 +39,16 @@ $(document).ready(function (){
 	$(document).on('click', '.remove_row', function () {
 		var item        = $(this).closest('tbody'),
 			count       = $('#mytable tr.row-item').length,
-			id          = parseInt($(this).data('itemid')),
-			data        = {type: 'get', url: url + 'tableGenerator/hide_items/' + id, selector: item};
+			itemId      = parseInt($(this).data('itemid')),
+			tableId     = parseInt($(this).data('tableid')),
+			data        = {url: url + 'tableGenerator/hide_items/' + itemId + '/' + tableId, selector: item};
 
 		if(count > 1) {
-			if(id === 'undefined' || id == 0){
+			if(itemId === 'undefined' || itemId == 0){
 				item.remove();
 
 			}else{
-				fetch(data.url).then(( response ) =>{
+				getData(data.url).then(( response ) =>{
 					data.selector.remove();
 				}).catch( ( error ) =>{
 					console.log(error);
@@ -59,20 +60,29 @@ $(document).ready(function (){
 		}
 	});
 
+	$(document).on('click', '.delete_row', function () {
+		var url = $(this).data('url');
+
+		getData(url).then(( response ) =>{
+			table.ajax.reload();
+		}).catch( ( error ) =>{
+			console.log(error);
+		});
+	});
+
 	if($('#mytable table tbody').length === 0) {
 		addRow();
 	}
 });
 
 var actionLinks = function (data) {
-		let link            = url,
-			id				= data.tableId,
+		let id				= data.tableId,
 			html            = '<div class="btn-group" role="group">';
 			html           += '<button id="btnGroupDrop1" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"> Options';
 			html           += '</button>';
 			html           += '<ul class="dropdown-menu" aria-labelledby="btnGroupDrop1">';
 			html           += '<li><a class="dropdown-item" href="' + url + 'tableGenerator/edit/' + id + '">Edit</a></li>';
-			html           += '<li><a class="dropdown-item" href="javascript:void(0)" data-url="' + url + 'tableGenerator/delete/' + id + '">Delete</a></li>';
+			html           += '<li><a class="dropdown-item delete_row" href="javascript:void(0)" data-url="' + url + 'tableGenerator/delete/' + id + '">Delete</a></li>';
 			html           += '</ul></div>';
 
 	return html;
@@ -86,9 +96,19 @@ var addRow = function (){
 async function postData(url = '', data = {}) {
 
 	const response = await fetch(url, {
-		method: 'POST',
+		method: "POST",
 		headers: {'Content-Type': 'application/x-www-form-urlencoded',},
 		body: data,
+	});
+
+	return response.json();
+}
+
+async function getData(url = '') {
+
+	const response = await fetch(url, {
+		method: "GET",
+		headers: {'Content-Type': 'application/x-www-form-urlencoded',},
 	});
 
 	return response.json();

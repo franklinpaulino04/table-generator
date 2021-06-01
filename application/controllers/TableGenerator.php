@@ -11,7 +11,7 @@ class TableGenerator extends CI_Controller
 
 		// Load Model
 		$this->load->model('tablegenerator_model');
-		$this->load->model('db_query');
+		$this->load->model('field_query_model');
 		$this->load->model('tablegenerator_items_model');
 		$this->load->model('field_types_model');
 	}
@@ -31,10 +31,12 @@ class TableGenerator extends CI_Controller
 
 	public function add()
 	{
-		if($tableId = $this->tablegenerator_model->save(array('hidden' => 1)))
-		{
-			redirect(base_url().'tablegenerator/edit/'.$tableId);
-		}
+		$data = array(
+			'content' 	=> 'table-generator/add_view',
+			'types' 	=> $this->field_types_model->data_dropdown(),
+		);
+
+		$this->load->view('include', $data);
 	}
 
 	public function edit($tableId)
@@ -50,9 +52,11 @@ class TableGenerator extends CI_Controller
 		$this->load->view('include', $data);
 	}
 
-	public function update($tableId)
+	public function insert()
 	{
-		$error = '';
+		$error 		= '';
+		$table 		= '';
+		$table_name = $this->input->post('table_name');
 
 		$this->form_validation->set_rules('table_name', '<strong>Table Name</strong>', 'trim|required');
 
@@ -62,9 +66,25 @@ class TableGenerator extends CI_Controller
 
 			foreach ($_POST['field_name'] AS $key => $value)
 			{
+				$field_typeId  = $_POST['field_typeId'][$key];
+				$field_length  = $_POST['field_length'][$key];
+				$field_default = $_POST['field_default'][$key];
+
 				$this->form_validation->set_rules('field_name['.$key.']', '<strong>Field Name</strong> in line '.$p, 'trim|required');
 				$this->form_validation->set_rules('field_typeId['.$key.']', '<strong>Field Type</strong> in line '.$p, 'is_natural_no_zero|required|trim');
 				$this->form_validation->set_rules('field_length['.$key.']', '<strong>Field Length</strong> in line '.$p, 'numeric|required|trim');
+
+				if($this->get_type($field_typeId, $field_length) == FALSE)
+				{
+					$error      = '<li><strong>Field Length is not valid</strong>.</li>';
+					$validation = FALSE;
+				}
+
+				if($this->get_type($field_typeId, $field_default) == FALSE)
+				{
+					$error      = '<li><strong>Field Default is not valid</strong>.</li>';
+					$validation = FALSE;
+				}
 
 				$p++;
 			}
@@ -75,6 +95,125 @@ class TableGenerator extends CI_Controller
 		if(!isset($_POST['field_key']) || (count($_POST['field_key']) > 1 || count($_POST['field_key']) == 0))
 		{
 			$error      = '<li><strong>Field Primary Key</strong>.</li>';
+			$validation = FALSE;
+		}
+
+		if($this->get_by_table($table_name,0) == FALSE)
+		{
+			$error      = '<li><strong>Table Name Exist</strong>.</li>';
+			$validation = FALSE;
+		}
+
+		if($validation == FALSE)
+		{
+			$result = array('result' => 0, 'error' => display_error(validation_errors().$error));
+			echo json_encode($result);
+			exit();
+		}
+		else
+		{
+			$data = array(
+				'table_name' => $this->clear_text($this->input->post('table_name')),
+				'hidden' 	 => 0,
+			);
+
+			if($tableId = $this->tablegenerator_model->save($data))
+			{
+				$table.="CREATE TABLE ".$data['table_name']."(";
+
+				if(isset($_POST['field_name']))
+				{
+					$num_columns = count($_POST['field_name']);
+					foreach ($_POST['field_name'] AS $key => $value)
+					{
+						$items = array(
+							'tableId' 	 		=> $tableId,
+							'field_name' 		=> $this->clear_text($this->input->post('field_name')[$key]),
+							'field_typeId'  	=> $this->input->post('field_typeId')[$key],
+							'field_length'  	=> $this->input->post('field_length')[$key],
+							'field_key'  		=> (isset($_POST['field_key'][$key]))? $this->input->post('field_key')[$key] : 0,
+							'field_default' 	=> $this->input->post('field_default')[$key],
+						);
+
+						if($items['field_key'] == 1)
+						{
+							$table.= $items['field_name']." ".$this->type($items['field_typeId'])."(".$items['field_length'].") AUTO_INCREMENT PRIMARY KEY";
+						}
+						else
+						{
+							$default = (empty($items['field_default']))? 'NULL' : "'".$items['field_default']."'";
+							$table.= $items['field_name']." ".$this->type($items['field_typeId'])."(".$items['field_length'].") DEFAULT $default ";
+						}
+
+						if(($key+1) != $num_columns)
+						{
+							$table.=",";
+						}
+
+						$this->tablegenerator_items_model->save($items);
+					}
+
+					$table.=");";
+				}
+
+				if($this->field_query_model->execute_query($table))
+				{
+					echo json_encode(array('result' => 1));
+					exit();
+				}
+			}
+		}
+	}
+
+	public function update($tableId)
+	{
+		$error 		= '';
+		$table 		= '';
+		$table_name = $this->input->post('table_name');
+
+		$this->form_validation->set_rules('table_name', '<strong>Table Name</strong>', 'trim|required');
+
+		if(isset($_POST['field_name']))
+		{
+			$p = 1;
+
+			foreach ($_POST['field_name'] AS $key => $value)
+			{
+				$field_typeId 	= $_POST['field_typeId'][$key];
+				$field_length 	= $_POST['field_length'][$key];
+				$field_default 	= $_POST['field_default'][$key];
+
+				$this->form_validation->set_rules('field_name['.$key.']', '<strong>Field Name</strong> in line '.$p, 'trim|required');
+				$this->form_validation->set_rules('field_typeId['.$key.']', '<strong>Field Type</strong> in line '.$p, 'is_natural_no_zero|required|trim');
+				$this->form_validation->set_rules('field_length['.$key.']', '<strong>Field Length</strong> in line '.$p, 'numeric|required|trim');
+
+				if($this->get_type($field_typeId, $field_length) == FALSE)
+				{
+					$error      = '<li><strong>Field Length is not valid</strong>.</li>';
+					$validation = FALSE;
+				}
+
+				if($this->get_type($field_typeId, $field_default) == FALSE)
+				{
+					$error      = '<li><strong>Field Default is not valid</strong>.</li>';
+					$validation = FALSE;
+				}
+
+				$p++;
+			}
+		}
+
+		$validation =  $this->form_validation->run();
+
+		if(!isset($_POST['field_key']) || (count($_POST['field_key']) > 1 || count($_POST['field_key']) == 0))
+		{
+			$error      = '<li><strong>Field Primary Key</strong>.</li>';
+			$validation = FALSE;
+		}
+
+		if($this->get_by_table($table_name, $tableId) == FALSE)
+		{
+			$error      = '<li><strong>Table Name Exist</strong>.</li>';
 			$validation = FALSE;
 		}
 
@@ -95,14 +234,7 @@ class TableGenerator extends CI_Controller
 
 			if($this->tablegenerator_model->update(array('tableId' => $tableId), $data))
 			{
-				if(isset($row->table_name) && $row->table_name != $data['table_name'])
-				{
-					$this->dbforge->rename_table($row->table_name, $data['table_name']);
-				}
-				else
-				{
-					$this->dbforge->create_table($data['table_name'], true);
-				}
+				$this->field_query_model->execute_query("ALTER TABLE ".$row->table_name." RENAME TO ".$data['table_name']);
 
 				if(isset($_POST['field_name']))
 				{
@@ -123,63 +255,51 @@ class TableGenerator extends CI_Controller
 
 							if($items['field_key'] == 1)
 							{
-								$fields = array(
-									$items['field_name'] 	=> array(
-										'constraint' 		=> $items['field_length'],
-										'type' 				=> $this->type($items['field_typeId']),
-										'auto_increment' 	=> TRUE,
-									),
-								);
+								$default = (empty($items['field_default']))? 'NULL' : $items['field_default'];
+								$table ="ALTER TABLE ".$data['table_name']." ADD ".$items['field_name']." ".$this->type($items['field_typeId'])."(".$items['field_length'].") DEFAULT ".$default." ";
+								$this->field_query_model->execute_query($table);
 							}
 							else
 							{
-								$fields = array(
-									$items['field_name'] 	=> array(
-										'constraint' 		=> $items['field_length'],
-										'type' 				=> $this->type($items['field_typeId']),
-									),
-								);
+								$default = (empty($items['field_default']))? 'NULL' : $items['field_default'];
+								$table ="ALTER TABLE ".$data['table_name']." ADD ".$items['field_name']." ".$this->type($items['field_typeId'])."(".$items['field_length'].") DEFAULT ".$default." ";
+								$this->field_query_model->execute_query($table);
 							}
-
-							$this->dbforge->add_column($data['table_name'], $fields);
 						}
 						else
 						{
 							$itemId   = $_POST['itemId'][$key];
 							$row_item = $this->tablegenerator_items_model->row($itemId);
 
-							$fields = array(
-								$row_item->field_name => array(
-									'name' 				=> $items['field_name'],
-									'constraint' 		=> $items['field_length'],
-									'type' 				=> $this->type($items['field_typeId']),
-								),
-							);
-
-							$this->dbforge->modify_column($data['table_name'], $fields);
+							if($row_item->field_name != $items['field_name'])
+							{
+								$default = (empty($items['field_default']))? 'NULL' : $items['field_default'];
+								$table ="ALTER TABLE ".$data['table_name']." CHANGE $row_item->field_name ".$items['field_name']." ".$this->type($items['field_typeId'])."(".$items['field_length'].") DEFAULT ".$default." ";
+								$this->field_query_model->execute_query($table);
+							}
 
 							$this->tablegenerator_items_model->update(array('itemId' => $itemId), $items);
 						}
 					}
 				}
 
-				echo json_encode(array('result' => 1));
-				exit();
+				if($this->field_query_model->execute_query($table))
+				{
+					echo json_encode(array('result' => 1));
+					exit();
+				}
 			}
 		}
 	}
 
-	public function hide_items($itemId)
+	public function hide_items($itemId, $tableId)
 	{
-		$data       = $this->tablegenerator_model->row($itemId);
+		$data       = $this->tablegenerator_model->row($tableId);
 		$data_items = $this->tablegenerator_items_model->row($itemId);
 
 		if($this->tablegenerator_items_model->update(array('itemId' => $itemId), array('hidden' => 1)))
 		{
-			if(isset($data->table_name) && isset($data_items->field_name))
-			{
-				$this->dbforge->drop_column($data->table_name, $data_items->field_name);
-			}
+			$this->field_query_model->execute_query("ALTER TABLE $data->table_name DROP COLUMN $data_items->field_name ");
 
 			echo json_encode(array('result' => 1));
 		}
@@ -193,7 +313,7 @@ class TableGenerator extends CI_Controller
 		{
 			if(isset($data->table_name))
 			{
-				$this->dbforge->drop_table($data->table_name, true);
+				$this->field_query_model->execute_query("DROP TABLE ".$data->table_name);
 			}
 
 			if($this->tablegenerator_items_model->update(array('tableId' => $tableId), array('hidden' => 1)))
@@ -214,5 +334,39 @@ class TableGenerator extends CI_Controller
 	{
 		$type = array(1 => 'VARCHAR', 2 => 'INT', 3 => 'DECIMAL', 4 => 'TEXT');
 		return $type[$typeId];
+	}
+
+	private function get_by_table($name, $tableId)
+	{
+		$where = array(
+			'table_name' => $name,
+			'tableId !=' => ($tableId != FALSE)? $tableId : 0,
+			'hidden' 	 => 0,
+		);
+
+		return ($this->tablegenerator_model->count_by($where) > 0)? FALSE : TRUE;
+	}
+
+	private function get_type($typeId, $value)
+	{
+		$valid = true;
+
+		switch ($typeId)
+		{
+			case 1:
+				$valid = is_string($value);
+				break;
+			case 2:
+				$valid = is_numeric($value);
+				break;
+			case 3:
+				$valid = (bool)preg_match('/^[+\-]?\d+(\.\d+)?$/', $value);
+				break;
+			case 4:
+				$valid = is_string($value);
+				break;
+		}
+
+		return $valid;
 	}
 }
