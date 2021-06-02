@@ -20,7 +20,6 @@
 			<div class="mb-3">
 				<label for="exampleFormControlInput1" class="form-label">Table Name</label>
 				<input type="text" class="form-control col-md-5" id="table-name" name="table_name" value="<?php echo $row->table_name;?>" placeholder="Table Name">
-				<input type="hidden" name="modifier" value="<?php echo $row->modifier;?>">
 			</div>
 
 			<br><br>
