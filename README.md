@@ -6,4 +6,4 @@ create database dbtablegenerator
 
 execute script dbtablegenerator.sql
 
-
+use
