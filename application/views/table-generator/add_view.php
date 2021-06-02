@@ -41,7 +41,7 @@
 					<tr class="row-item inline">
 						<td>
 							<input type="hidden" name="itemId[]" class="" value="">
-							<input type="checkbox" name="field_key[]" class="" value="1">
+							<input type="checkbox" name="field_key[]" class="field-key" value="1">
 						</td>
 						<td><input type="text" name="field_name[]" class="" value=""></td>
 						<td><?php echo form_dropdown('field_typeId[]', $types, 0, " class='field_typeId' data-placeholder='Select a type'");?></td>
@@ -73,7 +73,7 @@
 		<tr class="row-item inline">
 			<td>
 				<input type="hidden" name="itemId[]" class="" value="0">
-				<input type="checkbox" name="field_key[]" value="1" class="">
+				<input type="checkbox" name="field_key[]" value="1" class="field-key">
 			</td>
 			<td><input type="text" name="field_name[]" class=""></td>
 			<td><?php echo form_dropdown('field_typeId[]', $types, 0, "id='field_typeId' class=' field_typeId' data-placeholder='Select a type'");?></td>

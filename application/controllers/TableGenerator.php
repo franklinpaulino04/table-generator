@@ -92,6 +92,12 @@ class TableGenerator extends CI_Controller
 
 		$validation = $this->form_validation->run();
 
+		if($this->array_is_unique($_POST['field_name']) == false)
+		{
+			$error      = '<li><strong>Field Name is duplicate not valid</strong>.</li>';
+			$validation = FALSE;
+		}
+
 		if(!isset($_POST['field_key']) || (count($_POST['field_key']) > 1 || count($_POST['field_key']) == 0))
 		{
 			$error      = '<li><strong>Select One Field Primary Key</strong>.</li>';
@@ -205,6 +211,12 @@ class TableGenerator extends CI_Controller
 		}
 
 		$validation =  $this->form_validation->run();
+
+		if($this->array_is_unique($_POST['field_name']) == false)
+		{
+			$error      = '<li><strong>Field Name is duplicate not valid</strong>.</li>';
+			$validation = FALSE;
+		}
 
 		if(!isset($_POST['field_key']) || (count($_POST['field_key']) > 1 || count($_POST['field_key']) == 0))
 		{
@@ -386,5 +398,9 @@ class TableGenerator extends CI_Controller
 		}
 
 		return $valid;
+	}
+
+	private function array_is_unique($array) {
+		return array_unique($array) == $array;
 	}
 }

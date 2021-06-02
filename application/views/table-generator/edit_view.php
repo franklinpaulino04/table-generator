@@ -43,7 +43,7 @@
 									<?php  $field_key = ($item_row->field_key == 1)? 'checked' : '';?>
 
 									<input type="hidden" name="itemId[]" class="" value="<?php echo $item_row->itemId;?>">
-									<input type="checkbox" name="field_key[]" class="" value="1"<?php echo $field_key; ?> >
+									<input type="checkbox" name="field_key[]" class="field-key" value="1"<?php echo $field_key; ?> >
 								</td>
 								<td><input type="text" name="field_name[]" class="" value="<?php echo $item_row->field_name;?>"></td>
 								<td><?php echo form_dropdown('field_typeId[]', $types, $item_row->field_typeId, " class='field_typeId' data-placeholder='Select a type'");?></td>
@@ -76,7 +76,7 @@
 		<tr class="row-item inline">
 			<td>
 				<input type="hidden" name="itemId[]" class="" value="0">
-				<input type="checkbox" name="field_key[]" value="1" class="">
+				<input type="checkbox" name="field_key[]" value="1" class="field-key">
 			</td>
 			<td><input type="text" name="field_name[]" class=""></td>
 			<td><?php echo form_dropdown('field_typeId[]', $types, 0, "id='field_typeId' class=' field_typeId' data-placeholder='Select a type'");?></td>

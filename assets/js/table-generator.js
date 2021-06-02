@@ -70,6 +70,16 @@ $(document).ready(function (){
 		});
 	});
 
+	$(document).on('click', '.field-key', function () {
+
+		$('#mytable table tbody tr.row-item').each(function (key, value) {
+
+			$(value).find('.field-key').prop('checked', false);
+		});
+
+		$(this).prop( "checked", true);
+	});
+
 	if($('#mytable table tbody').length === 0) {
 		addRow();
 	}
